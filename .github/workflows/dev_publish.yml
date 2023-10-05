@@ -1,0 +1,44 @@
+# General on-push workflow. Runs basic tests and publishes an alpha dev build to Nuget.
+
+name: DevPublish
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore -c Debug
+    - name: Test
+      run: dotnet test --no-build --verbosity normal -c Debug
+      
+  publish:
+    runs-on: ubuntu-latest
+    needs: [test]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Pack
+      run: dotnet pack src/SnesRomUtils.csproj -c Debug --version-suffix alpha${{ github.run_number }}
+    - name: Prep packages
+      run: dotnet nuget add source --username esorth --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/esorth/index.json"
+    - name: Publish to GitHub packages 
+      run: dotnet nuget push src/bin/Debug/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }}  --source "github"
