@@ -37,7 +37,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Pack
-      run: dotnet pack src/SnesRomUtils.csproj -c Debug --version-suffix alpha${{ github.run_number }}
+      run: dotnet pack src/DotNetUtils.csproj -c Debug --version-suffix alpha${{ github.run_number }}
     - name: Prep packages
       run: dotnet nuget add source --username esorth --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/esorth/index.json"
     - name: Publish to GitHub packages 
