@@ -7,8 +7,6 @@
 		<Authors>Eric Orth</Authors>
 		<Title>.Net Utils</Title>
 		<Description>Misc utility classes/functions for use in .Net libraries.</Description>
-		<Copyright>Written in 2023 by $(Authors)</Copyright>
-		<PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/esorth/DotNetUtils</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>CC0-1.0</PackageLicenseExpression>
