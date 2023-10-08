@@ -21,7 +21,7 @@ namespace DotNetUtils
         // IImmutableList<T>.
         public static IImmutableList<T> ToImmutableList<T>(this IEnumerable<T> enumerable, Range range)
         {
-            if (enumerable is IList<T> && enumerable is IImmutableList<T> immutableList)
+            if (enumerable is IList<T> and IImmutableList<T> immutableList)
             {
                 if (range.Start.GetOffset(immutableList.Count) == 0 &&
                     range.End.GetOffset(immutableList.Count) == immutableList.Count)
@@ -40,7 +40,7 @@ namespace DotNetUtils
             }
             else if (enumerable is IImmutableList<T> nonListImmutableList)
             {
-                var builder = ImmutableList.CreateBuilder<T>();
+                ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
                 (int offset, int length) = range.GetOffsetAndLength(nonListImmutableList.Count);
                 for (int i = 0; i < length; i++)
                 {
@@ -50,7 +50,7 @@ namespace DotNetUtils
             }
             else if (enumerable is IList<T> list)
             {
-                var builder = ImmutableList.CreateBuilder<T>();
+                ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
                 (int offset, int length) = range.GetOffsetAndLength(list.Count);
                 for (int i = 0; i < length; i++)
                 {
@@ -74,7 +74,7 @@ namespace DotNetUtils
             }
             else if (enumerable is IImmutableList<T> immutableList)
             {
-                var builder = ImmutableArray.CreateBuilder<T>();
+                ImmutableArray<T>.Builder builder = ImmutableArray.CreateBuilder<T>();
                 (int offset, int length) = range.GetOffsetAndLength(immutableList.Count);
                 for (int i = 0; i < length; i++)
                 {
@@ -84,7 +84,7 @@ namespace DotNetUtils
             }
             else if (enumerable is IList<T> list)
             {
-                var builder = ImmutableArray.CreateBuilder<T>();
+                ImmutableArray<T>.Builder builder = ImmutableArray.CreateBuilder<T>();
                 (int offset, int length) = range.GetOffsetAndLength(list.Count);
                 for (int i = 0; i < length; i++)
                 {
@@ -100,7 +100,7 @@ namespace DotNetUtils
     }
 
     // Helper to wrap an IImmutableList<T> and provide a slice.
-    internal class ImmutableListSlice<T> : IList<T>, IImmutableList<T>
+    internal sealed class ImmutableListSlice<T> : IList<T>, IImmutableList<T>
     {
         internal ImmutableListSlice(IImmutableList<T> inner, Range range)
         {
@@ -123,10 +123,7 @@ namespace DotNetUtils
                 if (index < 0 || index >= _count) throw new ArgumentOutOfRangeException(nameof(index));
                 return _inner[_offset + index];
             }
-            set
-            {
-                throw new NotSupportedException();
-            }
+            set => throw new NotSupportedException();
         }
 
         public int Count => _count;
@@ -148,7 +145,7 @@ namespace DotNetUtils
                 return this;
             }
 
-            var builder = ImmutableList.CreateBuilder<T>();
+            ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
             for (int i = 0; i < _count; i++)
             {
                 builder.Add(_inner[_offset + i]);
@@ -202,13 +199,7 @@ namespace DotNetUtils
                 }
             }
 
-            readonly object? IEnumerator.Current
-            {
-                get
-                {
-                    return Current;
-                }
-            }
+            readonly object? IEnumerator.Current => Current;
 
             public bool MoveNext()
             {
@@ -256,11 +247,11 @@ namespace DotNetUtils
 
         public int IndexOf(T item, int index, int count, IEqualityComparer<T>? equalityComparer)
         {
-            if (index < 0 || (_count > 0 && index >= _count) || (_count == 0 && index != 0))
+            if (index < 0 || _count > 0 && index >= _count || _count == 0 && index != 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
-            else if (count < 0 || (index + count) > _count)
+            else if (count < 0 || index + count > _count)
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
@@ -292,11 +283,12 @@ namespace DotNetUtils
                 return this;
             }
 
-            var builder = ImmutableList.CreateBuilder<T>();
+            ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
             for (int i = 0; i < index; i++)
             {
                 builder.Add(_inner[_offset + i]);
             }
+
             builder.AddRange(items);
             for (int i = index; i < _count; i++)
             {
@@ -308,7 +300,7 @@ namespace DotNetUtils
 
         public int LastIndexOf(T item, int index, int count, IEqualityComparer<T>? equalityComparer)
         {
-            if (index < 0 || (_count > 0 && index >= _count) || (_count == 0 && index != 0))
+            if (index < 0 || _count > 0 && index >= _count || _count == 0 && index != 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
@@ -350,7 +342,7 @@ namespace DotNetUtils
         {
             if (match == null) throw new ArgumentNullException(nameof(match));
 
-            var builder = ImmutableList.CreateBuilder<T>();
+            ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
             foreach (T item in this)
             {
                 if (!match(item)) builder.Add(item);
@@ -399,7 +391,7 @@ namespace DotNetUtils
                 return this;
             }
 
-            var builder = ImmutableList.CreateBuilder<T>();
+            ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
             for (int i = 0; i < _count; i++)
             {
                 if (!toRemove.Contains(i))
@@ -414,14 +406,14 @@ namespace DotNetUtils
         public IImmutableList<T> RemoveRange(int index, int count)
         {
             if (index < 0 || index >= _count) throw new ArgumentOutOfRangeException(nameof(index));
-            if (count < 0 || (index + count) > _count) throw new ArgumentOutOfRangeException(nameof(count));
+            if (count < 0 || index + count > _count) throw new ArgumentOutOfRangeException(nameof(count));
 
             if (count == 0)
             {
                 return this;
             }
 
-            var builder = ImmutableList.CreateBuilder<T>();
+            ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
             for (int i = 0; i < index; i++)
             {
                 builder.Add(_inner[_offset + i]);
@@ -449,7 +441,7 @@ namespace DotNetUtils
         {
             if (index < 0 || index >= _count) throw new ArgumentOutOfRangeException(nameof(index));
 
-            var builder = ImmutableList.CreateBuilder<T>();
+            ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
             for (int i = 0; i < _count; i++)
             {
                 if (i == index)
@@ -466,7 +458,7 @@ namespace DotNetUtils
 
         IImmutableList<T> IImmutableList<T>.Add(T value)
         {
-            var builder = ImmutableList.CreateBuilder<T>();
+            ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
             for (int i = 0; i < _count; i++)
             {
                 builder.Add(_inner[_offset + i]);
@@ -489,7 +481,7 @@ namespace DotNetUtils
         {
             if (index < 0 || index > _count) throw new ArgumentOutOfRangeException(nameof(index));
 
-            var builder = ImmutableList.CreateBuilder<T>();
+            ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
             for (int i = 0; i < index; i++)
             {
                 builder.Add(_inner[_offset + i]);
@@ -507,15 +499,9 @@ namespace DotNetUtils
             return RemoveRange(index, 1);
         }
 
-        internal IImmutableList<T> Inner
-        {
-            get => _inner;
-        }
+        internal IImmutableList<T> Inner => _inner;
 
-        internal int Offset
-        {
-            get => _offset;
-        }
+        internal int Offset => _offset;
 
         private readonly IImmutableList<T> _inner;
         private readonly int _offset;

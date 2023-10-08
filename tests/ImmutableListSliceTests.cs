@@ -25,7 +25,7 @@ namespace DotNetUtils.Tests
             Assert.ThrowsException<ArgumentOutOfRangeException>(() => slice[-1]);
             Assert.ThrowsException<ArgumentOutOfRangeException>(() => slice[5]);
             CollectionAssert.AreEqual(new int[] { 5, 6, 7, 8, 9, 1, 2, 3 }, slice.AddRange(new int[] { 1, 2, 3 }).ToArray());
-            Assert.AreSame(slice, slice.AddRange(new int[] { }));
+            Assert.AreSame(slice, slice.AddRange(System.Array.Empty<int>()));
             Assert.IsTrue(slice.Contains(7));
             Assert.IsFalse(slice.Contains(4));
             Assert.IsFalse(slice.Contains(10));
@@ -34,12 +34,12 @@ namespace DotNetUtils.Tests
             Assert.AreEqual(2, slice.IndexOf(7, 1, 2, null));
             Assert.AreEqual(-1, slice.IndexOf(8, 1, 2, null));
             CollectionAssert.AreEqual(new int[] { 5, 6, 1, 2, 3, 7, 8, 9 }, slice.InsertRange(2, new int[] { 1, 2, 3 }).ToArray());
-            Assert.AreSame(slice, slice.InsertRange(2, new int[] { }));
+            Assert.AreSame(slice, slice.InsertRange(2, System.Array.Empty<int>()));
             Assert.AreEqual(3, slice.LastIndexOf(8, 3, 3, null));
             Assert.AreEqual(-1, slice.LastIndexOf(5, 3, 3, null));
             CollectionAssert.AreEqual(new int[] { 5, 6, 8, 9 }, slice.Remove(7, null).ToArray());
             Assert.AreSame(slice, slice.Remove(10, null));
-            CollectionAssert.AreEqual(new int[] { 5, 7, 9 }, slice.RemoveAll(x => x == 6 || x == 8).ToArray());
+            CollectionAssert.AreEqual(new int[] { 5, 7, 9 }, slice.RemoveAll(x => x is 6 or 8).ToArray());
             Assert.AreSame(slice, slice.RemoveAll(x => x < 5));
             CollectionAssert.AreEqual(new int[] { 6, 8 }, slice.RemoveRange(new int[] { 5, 7, 9, 10 }).ToArray());
             Assert.AreSame(slice, slice.RemoveRange(new int[] { 1, 2, 10 }));
@@ -67,7 +67,7 @@ namespace DotNetUtils.Tests
             Assert.AreEqual(1, slice.IndexOf(6));
             Assert.AreEqual(-1, slice.IndexOf(4));
 
-            var copyDestination = new int[7];
+            int[] copyDestination = new int[7];
             slice.CopyTo(copyDestination, 1);
             CollectionAssert.AreEqual(new int[] { 0, 5, 6, 7, 8, 9, 0 }, copyDestination);
         }
