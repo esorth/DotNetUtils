@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// .Net Utils - Misc utility classes/functions for use in .Net libraries.
+// Written in 2023 by Eric Orth
+//
+// To the extent possible under law, the author(s) have dedicated all copyright and related and neighboring rights to this software to the public domain worldwide. This software is distributed without any warranty.
+// You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see http://creativecommons.org/publicdomain/zero/1.0/.
+
 using System.Collections.Immutable;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DotNetUtils.Tests
 {
