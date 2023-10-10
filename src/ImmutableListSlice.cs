@@ -23,8 +23,18 @@ namespace DotNetUtils
         {
             if (enumerable is IList<T> and IImmutableList<T> immutableList)
             {
-                if (range.Start.GetOffset(immutableList.Count) == 0 &&
-                    range.End.GetOffset(immutableList.Count) == immutableList.Count)
+                int startOffset = range.Start.GetOffset(immutableList.Count);
+                int endOffset = range.End.GetOffset(immutableList.Count);
+                if (startOffset < 0 || endOffset > immutableList.Count)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(range), "Cannot take slice larger than input enumerable.");
+                }
+                else if (startOffset >= endOffset)
+                {
+                    return ImmutableList<T>.Empty;
+                }
+                else if (startOffset == 0 && endOffset == immutableList.Count)
                 {
                     return immutableList;
                 }
@@ -38,23 +48,20 @@ namespace DotNetUtils
                     return new ImmutableListSlice<T>(immutableList, range);
                 }
             }
-            else if (enumerable is IImmutableList<T> nonListImmutableList)
-            {
-                ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
-                (int offset, int length) = range.GetOffsetAndLength(nonListImmutableList.Count);
-                for (int i = 0; i < length; i++)
-                {
-                    builder.Add(nonListImmutableList[offset + i]);
-                }
-                return builder.ToImmutable();
-            }
             else if (enumerable is IList<T> list)
             {
-                ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
-                (int offset, int length) = range.GetOffsetAndLength(list.Count);
-                for (int i = 0; i < length; i++)
+                int startOffset = range.Start.GetOffset(list.Count);
+                int endOffset = range.End.GetOffset(list.Count);
+                if (startOffset < 0 || endOffset > list.Count)
                 {
-                    builder.Add(list[offset + i]);
+                    throw new ArgumentOutOfRangeException(
+                        nameof(range), "Cannot take slice larger than input enumerable.");
+                }
+
+                ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
+                for (int i = startOffset; i < endOffset; i++)
+                {
+                    builder.Add(list[i]);
                 }
                 return builder.ToImmutable();
             }
@@ -72,23 +79,19 @@ namespace DotNetUtils
             {
                 return array.AsSpan()[range];
             }
-            else if (enumerable is IImmutableList<T> immutableList)
-            {
-                ImmutableArray<T>.Builder builder = ImmutableArray.CreateBuilder<T>();
-                (int offset, int length) = range.GetOffsetAndLength(immutableList.Count);
-                for (int i = 0; i < length; i++)
-                {
-                    builder.Add(immutableList[offset + i]);
-                }
-                return builder.ToImmutable().AsSpan();
-            }
             else if (enumerable is IList<T> list)
             {
-                ImmutableArray<T>.Builder builder = ImmutableArray.CreateBuilder<T>();
-                (int offset, int length) = range.GetOffsetAndLength(list.Count);
-                for (int i = 0; i < length; i++)
+                int startOffset = range.Start.GetOffset(list.Count);
+                int endOffset = range.End.GetOffset(list.Count);
+                if (startOffset < 0 || endOffset > list.Count || startOffset > endOffset)
                 {
-                    builder.Add(list[offset + i]);
+                    throw new ArgumentOutOfRangeException(nameof(range));
+                }
+
+                ImmutableArray<T>.Builder builder = ImmutableArray.CreateBuilder<T>();
+                for (int i = startOffset; i < endOffset; i++)
+                {
+                    builder.Add(list[i]);
                 }
                 return builder.ToImmutable().AsSpan();
             }

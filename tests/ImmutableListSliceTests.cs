@@ -81,6 +81,15 @@ namespace DotNetUtils.Tests
         }
 
         [TestMethod()]
+        public void EmptyListFromImmutable()
+        {
+            IImmutableList<int> list = Array.ToImmutableList();
+            Assert.IsTrue(list is IList<int>);
+            Assert.AreEqual(0, list.ToImmutableList(4..4).Count);
+            Assert.AreEqual(0, list.ToImmutableList(8..4).Count);
+        }
+
+        [TestMethod()]
         public void ListFromImmutable()
         {
             IImmutableList<int> list = Array.ToImmutableList();
@@ -92,7 +101,17 @@ namespace DotNetUtils.Tests
         }
 
         [TestMethod()]
-        public void SliceFromSlice()
+        public void ListFromImmutableOutOfBounds()
+        {
+            IImmutableList<int> list = Array.ToImmutableList();
+            Assert.IsTrue(list is IList<int>);
+
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => list.ToImmutableList(-1..));
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => list.ToImmutableList(..^-1));
+        }
+
+        [TestMethod()]
+        public void ListFromWrapped()
         {
             IImmutableList<int> list = Array.ToImmutableList();
             Assert.IsTrue(list is IList<int>);
@@ -104,7 +123,7 @@ namespace DotNetUtils.Tests
         }
 
         [TestMethod()]
-        public void SliceFromArray()
+        public void ListFromArray()
         {
             Assert.IsTrue(Array is IList<int>);
             IImmutableList<int> slice = Array.ToImmutableList(5..10);
@@ -115,7 +134,21 @@ namespace DotNetUtils.Tests
         }
 
         [TestMethod()]
-        public void SliceFromStack()
+        public void ListFromArrayOutOfBounds()
+        {
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => Array.ToImmutableList(-1..));
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => Array.ToImmutableList(..^-1));
+        }
+
+        [TestMethod()]
+        public void EmptyListFromArray()
+        {
+            Assert.AreEqual(0, Array.ToImmutableList(4..4).Count);
+            Assert.AreEqual(0, Array.ToImmutableList(8..4).Count);
+        }
+
+        [TestMethod()]
+        public void ListFromStack()
         {
             Stack<int> stack = new(Array);
             Assert.IsFalse(stack is IList<int>);
@@ -124,6 +157,26 @@ namespace DotNetUtils.Tests
             Assert.IsFalse(slice is ImmutableListSlice<int>);
             Assert.IsTrue(slice is IList<int>);
             CollectionAssert.AreEqual(new int[] { 9, 8, 7, 6, 5 }, slice.ToArray());
+        }
+
+        [TestMethod()]
+        public void ListFromStackOutOfBounds()
+        {
+            Stack<int> stack = new(Array);
+            Assert.IsFalse(stack is IList<int>);
+
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => stack.ToImmutableList(-1..));
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => stack.ToImmutableList(..^-1));
+        }
+
+        [TestMethod()]
+        public void EmptyListFromStack()
+        {
+            Stack<int> stack = new(Array);
+            Assert.IsFalse(stack is IList<int>);
+
+            Assert.AreEqual(0, stack.ToImmutableList(4..4).Count);
+            Assert.AreEqual(0, stack.ToImmutableList(8..4).Count);
         }
 
         [TestMethod()]
@@ -136,11 +189,42 @@ namespace DotNetUtils.Tests
         }
 
         [TestMethod()]
+        public void SpanFromImmutableArrayOutOfBounds()
+        {
+            var array = Array.ToImmutableArray();
+
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => array.ToImmutableSpan(-1..));
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => array.ToImmutableSpan(..^-1));
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => array.ToImmutableSpan(8..4));
+        }
+
+        [TestMethod()]
+        public void EmptySpanFromImmutableArray()
+        {
+            var array = Array.ToImmutableArray();
+            Assert.IsTrue(array.ToImmutableSpan(4..4).IsEmpty);
+        }
+
+        [TestMethod()]
         public void SpanFromArray()
         {
             ReadOnlySpan<int> span = Array.ToImmutableSpan(5..10);
 
             CollectionAssert.AreEqual(new int[] { 5, 6, 7, 8, 9 }, span.ToArray());
+        }
+
+        [TestMethod()]
+        public void SpanFromArrayOutOfBounds()
+        {
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => Array.ToImmutableSpan(-1..));
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => Array.ToImmutableSpan(..^-1));
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => Array.ToImmutableSpan(8..4));
+        }
+
+        [TestMethod()]
+        public void EmptySpanFromArray()
+        {
+            Assert.IsTrue(Array.ToImmutableSpan(4..4).IsEmpty);
         }
 
         [TestMethod()]
@@ -150,6 +234,23 @@ namespace DotNetUtils.Tests
             ReadOnlySpan<int> span = stack.ToImmutableSpan(5..10);
 
             CollectionAssert.AreEqual(new int[] { 9, 8, 7, 6, 5 }, span.ToArray());
+        }
+
+        [TestMethod()]
+        public void SpanFromStackOutOfBounds()
+        {
+            Stack<int> stack = new(Array);
+
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => stack.ToImmutableSpan(-1..));
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => stack.ToImmutableSpan(..^-1));
+        }
+
+        [TestMethod()]
+        public void EmptySpanFromStack()
+        {
+            Stack<int> stack = new(Array);
+            Assert.IsTrue(stack.ToImmutableSpan(4..4).IsEmpty);
+            Assert.IsTrue(stack.ToImmutableSpan(8..4).IsEmpty);
         }
     }
 }
