@@ -7,6 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetUtilsTests", "tests\D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetUtils", "src\DotNetUtils.csproj", "{3938D5E7-705F-4B0A-8FEA-6F65713CB03D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetUtilsBenchmarks", "benchmarks\DotNetUtilsBenchmarks.csproj", "{E4318245-0557-447F-B1D5-6D0EE2090377}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3938D5E7-705F-4B0A-8FEA-6F65713CB03D} = {3938D5E7-705F-4B0A-8FEA-6F65713CB03D}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +26,10 @@ Global
 		{3938D5E7-705F-4B0A-8FEA-6F65713CB03D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3938D5E7-705F-4B0A-8FEA-6F65713CB03D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3938D5E7-705F-4B0A-8FEA-6F65713CB03D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4318245-0557-447F-B1D5-6D0EE2090377}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4318245-0557-447F-B1D5-6D0EE2090377}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4318245-0557-447F-B1D5-6D0EE2090377}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4318245-0557-447F-B1D5-6D0EE2090377}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -10,15 +10,23 @@ using System.Diagnostics;
 
 namespace DotNetUtils
 {
-    // Utilities to provide immutable list/span slices of given enumerables. Designed to be as
-    // efficient as possible for large source inputs, e.g. wrapping without copy when source meets
-    // immutability and type requirements and copying directly from offsets instead of enumerating
-    // when source is a list.
+    // Utilities to provide immutable list/span slices of given enumerables. Directly wraps or
+    // reuses the input enumerable instead of copying from it whenever possible, and using minimal
+    // overhead over normal .Take().To*() Linq calls when not.
+    //
+    // Caveat: When the input enumerable is wrapped or reused, that will prevent it from being
+    // garbage collected. Thus these utilities are best for use when that input enumerable is long-
+    // lived. When the input is no longer needed after a slice is extracted, it may be better to
+    // use normal Linq calls to force a copy of the slice.
     public static class ImmutableListSlice
     {
-        // Get an IImmutableList for the given `enumerable` and `range` (that will always also
-        // implement IList<T>). Wraps without copy if `enumerable` already implements IList<T> and
-        // IImmutableList<T>.
+        // Get an IImmutableList (that will always also implement IList<T>) for the given
+        // `enumerable` and `range`. If the input enumerable meets the immutability and type
+        // requirements (implements both IList<T> and IImmutableList<T>), takes  advantage of the
+        // immutable nature of that input by reusing or wrapping without copy.
+        //
+        // TODO: Figure out the Linq Take() output to see if this can be reworked to work after a
+        // normal Take() call as a more direct mirror of the Linq ToImmutableList().
         public static IImmutableList<T> ToImmutableList<T>(this IEnumerable<T> enumerable, Range range)
         {
             if (enumerable is IList<T> and IImmutableList<T> immutableList)
@@ -48,23 +56,6 @@ namespace DotNetUtils
                     return new ImmutableListSlice<T>(immutableList, range);
                 }
             }
-            else if (enumerable is IList<T> list)
-            {
-                int startOffset = range.Start.GetOffset(list.Count);
-                int endOffset = range.End.GetOffset(list.Count);
-                if (startOffset < 0 || endOffset > list.Count)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(range), "Cannot take slice larger than input enumerable.");
-                }
-
-                ImmutableList<T>.Builder builder = ImmutableList.CreateBuilder<T>();
-                for (int i = startOffset; i < endOffset; i++)
-                {
-                    builder.Add(list[i]);
-                }
-                return builder.ToImmutable();
-            }
             else
             {
                 return enumerable.Take(range).ToImmutableList();
@@ -72,28 +63,12 @@ namespace DotNetUtils
         }
 
         // Get an immutable ReadOnlySpan for the given `enumerable` and `range`, including copying
-        // the source if not an ImmutableArray<T>.
+        // the input enumerable if not an ImmutableArray<T>.
         public static ReadOnlySpan<T> ToImmutableSpan<T>(this IEnumerable<T> enumerable, Range range)
         {
             if (enumerable is ImmutableArray<T> array)
             {
                 return array.AsSpan()[range];
-            }
-            else if (enumerable is IList<T> list)
-            {
-                int startOffset = range.Start.GetOffset(list.Count);
-                int endOffset = range.End.GetOffset(list.Count);
-                if (startOffset < 0 || endOffset > list.Count || startOffset > endOffset)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(range));
-                }
-
-                ImmutableArray<T>.Builder builder = ImmutableArray.CreateBuilder<T>();
-                for (int i = startOffset; i < endOffset; i++)
-                {
-                    builder.Add(list[i]);
-                }
-                return builder.ToImmutable().AsSpan();
             }
             else
             {
