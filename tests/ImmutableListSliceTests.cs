@@ -218,13 +218,13 @@ namespace DotNetUtils.Tests
         {
             Assert.ThrowsException<ArgumentOutOfRangeException>(() => Array.ToImmutableSpan(-1..));
             Assert.ThrowsException<ArgumentOutOfRangeException>(() => Array.ToImmutableSpan(..^-1));
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() => Array.ToImmutableSpan(8..4));
         }
 
         [TestMethod()]
         public void EmptySpanFromArray()
         {
             Assert.IsTrue(Array.ToImmutableSpan(4..4).IsEmpty);
+            Assert.IsTrue(Array.ToImmutableSpan(8..4).IsEmpty);
         }
 
         [TestMethod()]
