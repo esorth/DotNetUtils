@@ -24,6 +24,20 @@ namespace DotNetUtils
             }
         }
 
+        // Whether or not the Index is equivalent to `other`, defined as representing the same offset.
+        // Returns null if the answer cannot be determined.
+        public static bool? EquivalentTo(this Index idx, Index other)
+        {
+            if (idx.IsFromEnd == other.IsFromEnd)
+            {
+                return idx.Value == other.Value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         // Whether or not the Index is less than `other`. Returns null if the answer cannot be determined.
         public static bool? LessThan(this Index idx, Index other)
         {
@@ -34,6 +48,59 @@ namespace DotNetUtils
             else if (!idx.IsFromEnd && !other.IsFromEnd)
             {
                 return idx.Value < other.Value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        // Whether or not the Index is less than `other` or equivalent (see EquivalentTo()). Returns
+        // null if the answer cannot be determined.
+        public static bool? LessThanOrEquivalent(this Index idx, Index other)
+        {
+            if (idx.IsFromEnd && other.IsFromEnd)
+            {
+                return idx.Value >= other.Value;
+            }
+            else if (!idx.IsFromEnd && !other.IsFromEnd)
+            {
+                return idx.Value <= other.Value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        // Whether or not the Index is greater than `other`. Returns null if the answer cannot be determined.
+        public static bool? GreaterThan(this Index idx, Index other)
+        {
+            if (idx.IsFromEnd && other.IsFromEnd)
+            {
+                return idx.Value < other.Value;
+            }
+            else if (!idx.IsFromEnd && !other.IsFromEnd)
+            {
+                return idx.Value > other.Value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        // Whether or not the Index is greater than `other` or equivalent (see EquivalentTo()). Returns
+        // null if the answer cannot be determined.
+        public static bool? GreaterThanOrEquivalent(this Index idx, Index other)
+        {
+            if (idx.IsFromEnd && other.IsFromEnd)
+            {
+                return idx.Value <= other.Value;
+            }
+            else if (!idx.IsFromEnd && !other.IsFromEnd)
+            {
+                return idx.Value >= other.Value;
             }
             else
             {
