@@ -14,6 +14,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace DotNetUtils
 {
+    // A self-balancing binary search tree that allows efficient (generally O(lg(n))) access while
+    // also keeping track of node indices to allow efficient (also generally O(lg(n))) random access
+    // reads by index.
     public class TreeIndexedDictionary<TKey, TValue> : ISortedIndexedDictionary<TKey, TValue>
     {
         public TreeIndexedDictionary() : this(Comparer<TKey>.Default) { }
@@ -557,6 +560,19 @@ namespace DotNetUtils
             return true;
         }
 
+        public void RemoveRange(IEnumerable<TKey> keys)
+        {
+            if (keys is null)
+            {
+                throw new ArgumentNullException(nameof(keys));
+            }
+
+            foreach(TKey key in keys)
+            {
+                Remove(key);
+            }
+        }
+
         public void RemoveAt(Index index)
         {
             int offset = index.GetOffset(Count);
@@ -579,10 +595,13 @@ namespace DotNetUtils
                 throw new ArgumentOutOfRangeException(nameof(range));
             }
 
+            List<TKey> toRemove = new(length);
             for (int i = offset; i < offset + length; i++)
             {
-                RemoveAt(i);
+                toRemove.Add(At(i).Key);
             }
+
+            RemoveRange(toRemove);
         }
 
         public KeyValuePair<TKey, TValue>? TryGetLowerItem(TKey key)
@@ -693,6 +712,21 @@ namespace DotNetUtils
             }
         }
 
+        public bool TryGetKey(TKey key, out TKey actual)
+        {
+            IndexedNode? indexedNode = TryFindNodeByKey(key);
+            if (indexedNode.HasValue)
+            {
+                actual = indexedNode.Value.Node.Key;
+                return true;
+            }
+            else
+            {
+                actual = key;
+                return false;
+            }
+        }
+
         public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             IndexedNode? indexedNode = TryFindNodeByKey(key);
@@ -796,62 +830,6 @@ namespace DotNetUtils
             Debug.Assert(count == node.SubtreeCount);
 
             return count;
-        }
-
-        //!! Remove
-        private void PrintTree()
-        {
-            if (_root is null)
-            {
-                Console.WriteLine("Tree is empty.");
-                return;
-            }
-
-            Dictionary<int, List<string>> tree = new()
-            {
-                [0] = new()
-            };
-
-            CalculateTreeToPrint(_root, tree, 0);
-
-            foreach (KeyValuePair<int, List<string>> row in tree)
-            {
-                Console.Write("" + row.Key + ": ");
-                foreach (string item in row.Value)
-                {
-                    Console.Write(item + ", ");
-                }
-                Console.WriteLine();
-            }
-        }
-
-        //!! Remove
-        private static void CalculateTreeToPrint(Node node, Dictionary<int, List<string>> tree, int depth)
-        {
-            if (!tree.ContainsKey(depth + 1))
-            {
-                tree[depth + 1] = new();
-            }
-
-            tree[depth].Add("(" + node.Key + ": " + node.NumLeft + "," + node.NumRight + ")");
-
-            if (node.Left is null)
-            {
-                tree[depth + 1].Add("(xx)");
-            }
-            else
-            {
-                CalculateTreeToPrint(node.Left, tree, depth + 1);
-            }
-
-            if (node.Right is null)
-            {
-                tree[depth + 1].Add("(xx)");
-            }
-            else
-            {
-                CalculateTreeToPrint(node.Right, tree, depth + 1);
-            }
         }
 
         private class KeyCollection : ICollection<TKey>, IReadOnlyCollection<TKey>
@@ -1016,7 +994,7 @@ namespace DotNetUtils
                 _enumerator.Reset();
             }
 
-            private IEnumerator<KeyValuePair<TKey, TValue>> _enumerator;
+            private readonly IEnumerator<KeyValuePair<TKey, TValue>> _enumerator;
         }
 
         private readonly struct IndexedNode

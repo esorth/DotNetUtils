@@ -8,6 +8,8 @@
 // You should have received a copy of the CC0 Public Domain Dedication along with this software. If
 // not, see http://creativecommons.org/publicdomain/zero/1.0/.
 
+// Interfaces for dictionaries that also allow random access reads of elements by index.
+
 using System.Collections;
 using System.Collections.Immutable;
 
@@ -17,6 +19,7 @@ namespace DotNetUtils
                                                         IDictionary<TKey, TValue>, IDictionary
     {
         public void AddRange(IEnumerable<KeyValuePair<TKey, TValue>> items);
+        public void RemoveRange(IEnumerable<TKey> keys);
 
         public void SetValueAt(Index index, TValue value);
 
@@ -36,6 +39,8 @@ namespace DotNetUtils
 
         public KeyValuePair<TKey, TValue> At(Index index);
         public IIndexedDictionary<TKey, TValue> At(Range range);
+
+        public bool TryGetKey(TKey key, out TKey actual);
     }
 
     public interface IReadOnlySortedIndexedDictionary<TKey, TValue> :
@@ -66,9 +71,40 @@ namespace DotNetUtils
 
     public interface IImmutableIndexedDictionary<TKey, TValue> :
         IReadOnlyIndexedDictionary<TKey, TValue>, IImmutableDictionary<TKey, TValue>
-    { }
+    {
+        public new IImmutableIndexedDictionary<TKey, TValue> At(Range range);
+
+        public new IImmutableIndexedDictionary<TKey, TValue> Add(TKey key, TValue value);
+        public new IImmutableIndexedDictionary<TKey, TValue> AddRange(
+            IEnumerable<KeyValuePair<TKey, TValue>> items);
+        public new IImmutableIndexedDictionary<TKey, TValue> Clear();
+        public new IImmutableIndexedDictionary<TKey, TValue> Remove(TKey key);
+        public new IImmutableIndexedDictionary<TKey, TValue> RemoveRange(
+            IEnumerable<TKey> keys);
+        public IImmutableIndexedDictionary<TKey, TValue> RemoveAt(Index index);
+        public IImmutableIndexedDictionary<TKey, TValue> RemoveAt(Range range);
+        public new IImmutableIndexedDictionary<TKey, TValue> SetItem(TKey key, TValue value);
+        public new IImmutableIndexedDictionary<TKey, TValue> SetItems(
+            IEnumerable<KeyValuePair<TKey, TValue>> items);
+    }
 
     public interface IImmutableSortedIndexedDictionary<TKey, TValue> :
         IImmutableIndexedDictionary<TKey, TValue>, IReadOnlySortedIndexedDictionary<TKey, TValue>
-    { }
+    {
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> At(Range range);
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> Slice(TKey first, TKey last);
+
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> Add(TKey key, TValue value);
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> AddRange(
+            IEnumerable<KeyValuePair<TKey, TValue>> items);
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> Clear();
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> Remove(TKey key);
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> RemoveRange(
+            IEnumerable<TKey> keys);
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> RemoveAt(Index index);
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> RemoveAt(Range range);
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> SetItem(TKey key, TValue value);
+        public new IImmutableSortedIndexedDictionary<TKey, TValue> SetItems(
+            IEnumerable<KeyValuePair<TKey, TValue>> items);
+    }
 }
