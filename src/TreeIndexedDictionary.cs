@@ -17,14 +17,10 @@ namespace DotNetUtils
     // A self-balancing binary search tree that allows efficient (generally O(lg(n))) access while
     // also keeping track of node indices to allow efficient (also generally O(lg(n))) random access
     // reads by index.
-    public class TreeIndexedDictionary<TKey, TValue> : ISortedIndexedDictionary<TKey, TValue>
+    public class TreeIndexedDictionary<TKey, TValue>(IComparer<TKey> comparer)
+        : ISortedIndexedDictionary<TKey, TValue>
     {
         public TreeIndexedDictionary() : this(Comparer<TKey>.Default) { }
-
-        public TreeIndexedDictionary(IComparer<TKey> comparer)
-        {
-            Comparer = comparer;
-        }
 
         public TreeIndexedDictionary(IEnumerable<KeyValuePair<TKey, TValue>> entries)
             : this(entries, Comparer<TKey>.Default) { }
@@ -196,7 +192,7 @@ namespace DotNetUtils
         ICollection<TValue> IDictionary<TKey, TValue>.Values =>
             new ValueCollection(this);
 
-        public IComparer<TKey> Comparer { get; }
+        public IComparer<TKey> Comparer { get; } = comparer;
 
         public void Add(TKey key, TValue value)
         {
@@ -832,13 +828,9 @@ namespace DotNetUtils
             return count;
         }
 
-        private class KeyCollection : ICollection<TKey>, IReadOnlyCollection<TKey>
+        private class KeyCollection(TreeIndexedDictionary<TKey, TValue> tree)
+            : ICollection<TKey>, IReadOnlyCollection<TKey>
         {
-            public KeyCollection(TreeIndexedDictionary<TKey, TValue> tree)
-            {
-                _tree = tree;
-            }
-
             public int Count => _tree.Count;
 
             public bool IsReadOnly => true;
@@ -890,16 +882,12 @@ namespace DotNetUtils
                 return GetEnumerator();
             }
 
-            private readonly TreeIndexedDictionary<TKey, TValue> _tree;
+            private readonly TreeIndexedDictionary<TKey, TValue> _tree = tree;
         }
 
-        private class ValueCollection : ICollection<TValue>, IReadOnlyCollection<TValue>
+        private class ValueCollection(TreeIndexedDictionary<TKey, TValue> tree)
+            : ICollection<TValue>, IReadOnlyCollection<TValue>
         {
-            public ValueCollection(TreeIndexedDictionary<TKey, TValue> tree)
-            {
-                _tree = tree;
-            }
-
             public int Count => _tree.Count;
 
             public bool IsReadOnly => true;
@@ -959,16 +947,12 @@ namespace DotNetUtils
                 return GetEnumerator();
             }
 
-            private readonly TreeIndexedDictionary<TKey, TValue> _tree;
+            private readonly TreeIndexedDictionary<TKey, TValue> _tree = tree;
         }
 
-        private class DictionaryEnumerator : IDictionaryEnumerator
+        private class DictionaryEnumerator(IEnumerator<KeyValuePair<TKey, TValue>> subEnumerator)
+            : IDictionaryEnumerator
         {
-            public DictionaryEnumerator(IEnumerator<KeyValuePair<TKey, TValue>> subEnumerator)
-            {
-                _enumerator = subEnumerator;
-            }
-
             public DictionaryEntry Entry => new(Key, Value);
 
             public object Key
@@ -994,19 +978,13 @@ namespace DotNetUtils
                 _enumerator.Reset();
             }
 
-            private readonly IEnumerator<KeyValuePair<TKey, TValue>> _enumerator;
+            private readonly IEnumerator<KeyValuePair<TKey, TValue>> _enumerator = subEnumerator;
         }
 
-        private readonly struct IndexedNode
+        private readonly struct IndexedNode(Node node, int index)
         {
-            public IndexedNode(Node node, int index)
-            {
-                Node = node;
-                Index = index;
-            }
-
-            public Node Node { get; }
-            public int Index { get; }
+            public Node Node { get; } = node;
+            public int Index { get; } = index;
         }
 
         private IndexedNode? TryFindNodeByKey(TKey key)
@@ -1499,14 +1477,8 @@ namespace DotNetUtils
             }
         }
 
-        private class Node : ICloneable
+        private class Node(TKey key, TValue value) : ICloneable
         {
-            public Node(TKey key, TValue value)
-            {
-                Key = key;
-                Value = value;
-            }
-
             public object Clone()
             {
                 var clone = (Node)MemberwiseClone();
@@ -1589,10 +1561,7 @@ namespace DotNetUtils
 
                 if (IsLeftChild)
                 {
-                    if (Right is not null)
-                    {
-                        Right.Parent = parent;
-                    }
+                    Right?.Parent = parent;
                     SubtreeCount += 1 + parent.NumRight;
                     parent.SubtreeCount -= 1 + NumLeft;
                     parent.Left = Right;
@@ -1601,10 +1570,7 @@ namespace DotNetUtils
                 else
                 {
                     Debug.Assert(IsRightChild);
-                    if (Left is not null)
-                    {
-                        Left.Parent = parent;
-                    }
+                    Left?.Parent = parent;
                     SubtreeCount += 1 + parent.NumLeft;
                     parent.SubtreeCount -= 1 + NumRight;
                     parent.Right = Left;
@@ -1704,8 +1670,8 @@ namespace DotNetUtils
             public Node? Left { get; set; } = null;
             public Node? Right { get; set; } = null;
 
-            public TKey Key { get; }
-            public TValue Value { get; set; }
+            public TKey Key { get; } = key;
+            public TValue Value { get; set; } = value;
 
             public int NumLeft
             {

@@ -303,7 +303,6 @@ namespace DotNetUtils
                 }
             }
 
-
             if (!i1.LessThan(i2).GetValueOrDefault(true))
             {
                 throw new ArgumentException("Parsed range invalid.");

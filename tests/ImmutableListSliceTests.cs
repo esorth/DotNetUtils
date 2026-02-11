@@ -182,7 +182,7 @@ namespace DotNetUtils.Tests
         [TestMethod()]
         public void SpanFromImmutableArray()
         {
-            var array = Array.ToImmutableArray();
+            ImmutableArray<int> array = Array.ToImmutableArray();
             ReadOnlySpan<int> span = array.ToImmutableSpan(5..10);
 
             CollectionAssert.AreEqual(new int[] { 5, 6, 7, 8, 9 }, span.ToArray());
@@ -191,7 +191,7 @@ namespace DotNetUtils.Tests
         [TestMethod()]
         public void SpanFromImmutableArrayOutOfBounds()
         {
-            var array = Array.ToImmutableArray();
+            ImmutableArray<int> array = Array.ToImmutableArray();
 
             Assert.ThrowsException<ArgumentOutOfRangeException>(() => array.ToImmutableSpan(-1..));
             Assert.ThrowsException<ArgumentOutOfRangeException>(() => array.ToImmutableSpan(..^-1));
@@ -201,7 +201,7 @@ namespace DotNetUtils.Tests
         [TestMethod()]
         public void EmptySpanFromImmutableArray()
         {
-            var array = Array.ToImmutableArray();
+            ImmutableArray<int> array = Array.ToImmutableArray();
             Assert.IsTrue(array.ToImmutableSpan(4..4).IsEmpty);
         }
 
