@@ -154,14 +154,8 @@ namespace DotNetUtils
             }
         }
 
-        private struct Enumerator : IEnumerator<T>
+        private struct Enumerator(ImmutableListSlice<T> list) : IEnumerator<T>
         {
-            public Enumerator(ImmutableListSlice<T> list)
-            {
-                _list = list;
-                _index = -1;
-            }
-
             public readonly T Current
             {
                 get
@@ -201,8 +195,8 @@ namespace DotNetUtils
                 // No disposal needed.
             }
 
-            private readonly ImmutableListSlice<T> _list;
-            private int _index;
+            private readonly ImmutableListSlice<T> _list = list;
+            private int _index = -1;
         }
 
         public IEnumerator<T> GetEnumerator()

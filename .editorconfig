@@ -113,6 +113,7 @@ csharp_prefer_simple_using_statement = true:suggestion
 csharp_style_namespace_declarations = block_scoped:error
 csharp_style_prefer_method_group_conversion = true:error
 csharp_style_prefer_top_level_statements = true:error
+csharp_style_prefer_primary_constructors = true:error
 
 # Expression-level preferences
 csharp_prefer_simple_default_expression = true:error
@@ -128,6 +129,10 @@ csharp_style_prefer_utf8_string_literals = true:suggestion
 csharp_style_throw_expression = true:silent
 csharp_style_unused_value_assignment_preference = discard_variable:error
 csharp_style_unused_value_expression_statement_preference = discard_variable:silent
+dotnet_style_prefer_collection_expression = never
+dotnet_style_namespace_match_folder = true:error
+csharp_style_prefer_implicitly_typed_lambda_expression = true:suggestion
+csharp_style_inlined_variable_declaration = true:suggestion
 
 # 'using' directive preferences
 csharp_using_directive_placement = outside_namespace:error

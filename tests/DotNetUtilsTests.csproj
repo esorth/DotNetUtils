@@ -10,6 +10,7 @@
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<RootNamespace>DotNetUtils.Tests</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -17,10 +18,9 @@
 		<PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
 		<PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
 		<PackageReference Include="coverlet.collector" Version="3.2.0" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\src\DotNetUtils.csproj" />
+		<CompilerVisibleProperty Include="RootNamespace" />
+		<CompilerVisibleProperty Include="ProjectDir" />
 	</ItemGroup>
 
 </Project>

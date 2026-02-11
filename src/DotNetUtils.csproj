@@ -33,6 +33,8 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
+		<CompilerVisibleProperty Include="RootNamespace" />
+		<CompilerVisibleProperty Include="ProjectDir" />
 	</ItemGroup>
 
 </Project>

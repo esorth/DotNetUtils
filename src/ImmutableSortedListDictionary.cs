@@ -48,8 +48,7 @@ namespace DotNetUtils
             }
             else
             {
-                var dict = items.ToDictionary((KeyValuePair<TKey, TValue> item) => item.Key,
-                                              (KeyValuePair<TKey, TValue> item) => item.Value);
+                var dict = items.ToDictionary(item => item.Key, item => item.Value);
                 return new ImmutableSortedListDictionary<TKey, TValue>(
                     new SortedList<TKey, TValue>(dict, keyComparer));
             }
@@ -455,8 +454,7 @@ namespace DotNetUtils
                 throw new ArgumentNullException(nameof(items));
             }
 
-            var dict = items.ToDictionary((KeyValuePair<TKey, TValue> item) => item.Key,
-                                          (KeyValuePair<TKey, TValue> item) => item.Value);
+            var dict = items.ToDictionary(item => item.Key, item => item.Value);
 
             bool allFound = true;
             foreach (KeyValuePair<TKey, TValue> item in dict)

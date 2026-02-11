@@ -239,8 +239,7 @@ namespace DotNetUtils
                 str = str[1..];
             }
 
-            int val;
-            if (!int.TryParse(str, out val))
+            if (!int.TryParse(str, out int val))
             {
                 return false;
             }
