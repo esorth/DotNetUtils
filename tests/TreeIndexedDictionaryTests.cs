@@ -32,10 +32,10 @@ namespace DotNetUtils.Tests
                         Assert.AreEqual(item.Key, randomList[item.Value]);
                         Assert.IsTrue(tree.ContainsKey(item.Key));
                         Assert.AreEqual(tree.IndexOf(item.Key), tree.IndexOf(item));
-                        Assert.IsTrue(item.Key > last);
+                        Assert.IsGreaterThan(last, item.Key);
                         last = item.Key;
                     }
-                    Assert.IsTrue(last < 100);
+                    Assert.IsLessThan(100, last);
                 }
 
                 int j = 0;
@@ -164,7 +164,7 @@ namespace DotNetUtils.Tests
                         Assert.IsTrue(tree.ContainsKey(item.Key));
                         Assert.AreEqual(j, tree.IndexOf(item));
                         Assert.AreEqual(item, tree.At(j++));
-                        Assert.IsTrue(item.Key > last);
+                        Assert.IsGreaterThan(last, item.Key);
                         last = item.Key;
                     }
                 }
@@ -212,7 +212,7 @@ namespace DotNetUtils.Tests
                         Assert.IsTrue(tree.ContainsKey(item.Key));
                         Assert.AreEqual(j, tree.IndexOf(item));
                         Assert.AreEqual(item, tree.At(j++));
-                        Assert.IsTrue(item.Key > last);
+                        Assert.IsGreaterThan(last, item.Key);
                         last = item.Key;
                     }
                 }

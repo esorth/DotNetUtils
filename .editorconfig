@@ -483,5 +483,8 @@ dotnet_diagnostic.CA2256.severity = error
 dotnet_diagnostic.CA2257.severity = error
 dotnet_diagnostic.CA2258.severity = error
 dotnet_diagnostic.CA2259.severity = error
+dotnet_diagnostic.MSTEST0023.severity = error
+dotnet_diagnostic.MSTEST0037.severity = error
+dotnet_diagnostic.MSTEST0039.severity = error
 [*.vb]
 dotnet_diagnostic.CA1047.severity = error
