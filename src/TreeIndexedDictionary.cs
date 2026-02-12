@@ -563,7 +563,7 @@ namespace DotNetUtils
                 throw new ArgumentNullException(nameof(keys));
             }
 
-            foreach(TKey key in keys)
+            foreach (TKey key in keys)
             {
                 Remove(key);
             }
