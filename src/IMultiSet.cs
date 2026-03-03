@@ -71,10 +71,6 @@ namespace DotNetUtils
     public interface IImmutableMultiSet<T>
     : IImmutableCollection<T>, IReadOnlyMultiSet<T>, IEnumerable<T>
     {
-        public new IImmutableSet<IImmutableCollection<T>> ItemCollections { get; }
-        public new IImmutableSet<T> UniqueItems { get; }
-        public new IImmutableDictionary<T, int> ItemCounts { get; }
-
         public new IImmutableMultiSet<T> Add(T item);
 
         // Add `count` instances of `item` to the multi-set.

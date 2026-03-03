@@ -48,7 +48,6 @@ namespace DotNetUtils
 
             _totalCount += count;
         }
-
         public void AddRange(IEnumerable<T> items)
         {
             ArgumentNullException.ThrowIfNull(items);
@@ -56,7 +55,6 @@ namespace DotNetUtils
         }
 
         public bool RemoveOne(T item) => RemoveN(item, 1) > 0;
-
         public int RemoveN(T item, int count)
         {
             if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
@@ -78,7 +76,6 @@ namespace DotNetUtils
             _totalCount -= removed;
             return removed;
         }
-
         public int Remove(T item)
         {
             if (!_counts.TryGetValue(item, out int count) || count == 0) return 0;
@@ -86,7 +83,6 @@ namespace DotNetUtils
             _totalCount -= count;
             return count;
         }
-
         // Expected to remove a single instance, so implement using RemoveOne().
         bool ICollection<T>.Remove(T item) => RemoveOne(item);
 
@@ -135,34 +131,6 @@ namespace DotNetUtils
             _totalCount = 0;
         }
 
-        // ICollection<T>.Count
-        public int Count => _totalCount;
-        public int CountUnique => _counts.Count;
-        int IReadOnlyCollection<IReadOnlyCollection<T>>.Count => CountUnique;
-        int IReadOnlyCollection<KeyValuePair<T, int>>.Count => CountUnique;
-
-        public IReadOnlySet<IReadOnlyCollection<T>> ItemCollections => this;
-        public IReadOnlySet<T> UniqueItems => new UniqueItemsView(this);
-        public IReadOnlyDictionary<T, int> ItemCounts => this;
-        // IReadOnlyDictionary<T, int>.Keys
-        public IEnumerable<T> Keys => _counts.Keys;
-        // IReadOnlyDictionary<T, int>.Values
-        public IEnumerable<int> Values => _counts.Values;
-
-        // ICollection<T>.IsReadOnly
-        public bool IsReadOnly => false;
-
-        public int this[T key]
-        {
-            get
-            {
-                if (_counts.TryGetValue(key, out int v)) return v;
-                throw new KeyNotFoundException();
-            }
-        }
-
-        public int CountOf(T item) => _counts.TryGetValue(item, out int count) ? count : 0;
-
         // ICollection<T>.CopyTo(T[], int)
         public void CopyTo(T[] array, int arrayIndex)
         {
@@ -180,26 +148,64 @@ namespace DotNetUtils
             }
         }
 
-        public bool Contains(T item) => _counts.ContainsKey(item);
+        // ICollection<T>.Count
+        public int Count => _totalCount;
+        public int CountUnique => _counts.Count;
+        int IReadOnlyCollection<IReadOnlyCollection<T>>.Count => CountUnique;
+        int IReadOnlyCollection<KeyValuePair<T, int>>.Count => CountUnique;
+
+        public IReadOnlySet<IReadOnlyCollection<T>> ItemCollections => this;
+        public IReadOnlySet<T> UniqueItems => new UniqueItemsView(this);
+        public IReadOnlyDictionary<T, int> ItemCounts => this;
+        // IReadOnlyDictionary<T, int>.Keys
+        public IEnumerable<T> Keys => _counts.Keys;
+        // IReadOnlyDictionary<T, int>.Values
+        public IEnumerable<int> Values => _counts.Values;
+
+        // ICollection<T>.IsReadOnly
+        public bool IsReadOnly => false;
+
+        // IReadOnlyDictionary<T, int>.this[TKey]
+        public int this[T key]
+        {
+            get
+            {
+                if (_counts.TryGetValue(key, out int v)) return v;
+                throw new KeyNotFoundException();
+            }
+        }
+
+        public int CountOf(T item)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            return _counts.TryGetValue(item, out int count) ? count : 0;
+        }
+
+        public bool Contains(T item)
+        {
+            ArgumentNullException.ThrowIfNull(item);
+            return _counts.ContainsKey(item);
+        }
 
         public bool Contains(T item, int count)
         {
-            if (count < 0) throw new ArgumentOutOfRangeException(nameof(count));
+            ArgumentNullException.ThrowIfNull(item);
+            if (count <= 0) throw new ArgumentOutOfRangeException(nameof(count));
             return CountOf(item) == count;
         }
 
-        // IReadOnlyDictionary<T, int>.ContainsKey(TKey)
-        public bool ContainsKey(T key) => _counts.ContainsKey(key);
-
-        // IReadOnlySet<IReadOnlyCollection<T>>.Contains(T)
-        public bool Contains(IReadOnlyCollection<T> items)
+        // IReadOnlySet<IReadOnlyCollection<T>>.Contains(T1)
+        public bool Contains(IReadOnlyCollection<T>? items)
         {
-            ArgumentNullException.ThrowIfNull(items);
+            if (items == null || items.Count == 0) return false;
 
             return ValidateDuplicateGrouping(items) &&
                 _counts.TryGetValue(items.First(), out int count) &&
                 count == items.Count;
         }
+
+        // IReadOnlyDictionary<T, int>.ContainsKey(TKey)
+        public bool ContainsKey(T key) => _counts.ContainsKey(key);
 
         // IReadOnlyDictionary<T, int>.TryGetValue(TKey, out TValue)
         public bool TryGetValue(T key, out int value) => _counts.TryGetValue(key, out value);
@@ -228,54 +234,60 @@ namespace DotNetUtils
             }
         }
 
-        // IReadOnlySet<IReadOnlyCollection<T>>.SetEquals(IEnumerable<T>)
+        // IReadOnlySet<IReadOnlyCollection<T>>.SetEquals(IEnumerable<T1>)
         public bool SetEquals(IEnumerable<IReadOnlyCollection<T>> other)
         {
+            ArgumentNullException.ThrowIfNull(other);
             HashSet<KeyValuePair<T, int>> ours =
                 new(_counts, new KeyValuePairComparer(_counts.Comparer));
             HashSet<KeyValuePair<T, int>> theirs = ToPairSet(other);
             return ours.SetEquals(theirs);
         }
 
-        // IReadOnlySet<IReadOnlyCollection<T>>.IsSubsetOf(IEnumerable<T>)
+        // IReadOnlySet<IReadOnlyCollection<T>>.IsSubsetOf(IEnumerable<T1>)
         public bool IsSubsetOf(IEnumerable<IReadOnlyCollection<T>> other)
         {
+            ArgumentNullException.ThrowIfNull(other);
             HashSet<KeyValuePair<T, int>> ours =
                 new(_counts, new KeyValuePairComparer(_counts.Comparer));
             HashSet<KeyValuePair<T, int>> theirs = ToPairSet(other);
             return ours.IsSubsetOf(theirs);
         }
 
-        // IReadOnlySet<IReadOnlyCollection<T>>.IsProperSubsetOf(IEnumerable<T>)
+        // IReadOnlySet<IReadOnlyCollection<T>>.IsProperSubsetOf(IEnumerable<T1>)
         public bool IsProperSubsetOf(IEnumerable<IReadOnlyCollection<T>> other)
         {
+            ArgumentNullException.ThrowIfNull(other);
             HashSet<KeyValuePair<T, int>> ours =
                 new(_counts, new KeyValuePairComparer(_counts.Comparer));
             HashSet<KeyValuePair<T, int>> theirs = ToPairSet(other);
             return ours.IsProperSubsetOf(theirs);
         }
 
-        // IReadOnlySet<IReadOnlyCollection<T>>.IsSupersetOf(IEnumerable<T>)
+        // IReadOnlySet<IReadOnlyCollection<T>>.IsSupersetOf(IEnumerable<T1>)
         public bool IsSupersetOf(IEnumerable<IReadOnlyCollection<T>> other)
         {
+            ArgumentNullException.ThrowIfNull(other);
             HashSet<KeyValuePair<T, int>> ours =
                 new(_counts, new KeyValuePairComparer(_counts.Comparer));
             HashSet<KeyValuePair<T, int>> theirs = ToPairSet(other);
             return ours.IsSupersetOf(theirs);
         }
 
-        // IReadOnlySet<IReadOnlyCollection<T>>.IsProperSupersetOf(IEnumerable<T>)
+        // IReadOnlySet<IReadOnlyCollection<T>>.IsProperSupersetOf(IEnumerable<T1>)
         public bool IsProperSupersetOf(IEnumerable<IReadOnlyCollection<T>> other)
         {
+            ArgumentNullException.ThrowIfNull(other);
             HashSet<KeyValuePair<T, int>> ours =
                 new(_counts, new KeyValuePairComparer(_counts.Comparer));
             HashSet<KeyValuePair<T, int>> theirs = ToPairSet(other);
             return ours.IsProperSupersetOf(theirs);
         }
 
-        // IReadOnlySet<IReadOnlyCollection<T>>.Overlaps(IEnumerable<T>)
+        // IReadOnlySet<IReadOnlyCollection<T>>.Overlaps(IEnumerable<T1>)
         public bool Overlaps(IEnumerable<IReadOnlyCollection<T>> other)
         {
+            ArgumentNullException.ThrowIfNull(other);
             HashSet<KeyValuePair<T, int>> ours =
                 new(_counts, new KeyValuePairComparer(_counts.Comparer));
             HashSet<KeyValuePair<T, int>> theirs = ToPairSet(other);
@@ -291,10 +303,9 @@ namespace DotNetUtils
         }
 
         // Set operations implemented by materializing sets of (element,count) pairs
-        private HashSet<KeyValuePair<T, int>> ToPairSet(IEnumerable<IReadOnlyCollection<T>>? source)
+        private HashSet<KeyValuePair<T, int>> ToPairSet(IEnumerable<IReadOnlyCollection<T>> source)
         {
             var set = new HashSet<KeyValuePair<T, int>>(new KeyValuePairComparer(_counts.Comparer));
-            if (source == null) return set;
             foreach (IReadOnlyCollection<T> collection in source)
             {
                 if (ValidateDuplicateGrouping(collection))
@@ -359,14 +370,13 @@ namespace DotNetUtils
             public IEnumerator<T> GetEnumerator() => _parent._counts.Keys.GetEnumerator();
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-            public bool IsProperSubsetOf(IEnumerable<T> other) =>
-                ToSet().IsProperSubsetOf(new HashSet<T>(other, _parent._counts.Comparer));
-            public bool IsProperSupersetOf(IEnumerable<T> other) =>
-                ToSet().IsProperSupersetOf(new HashSet<T>(other, _parent._counts.Comparer));
-            public bool IsSubsetOf(IEnumerable<T> other) =>
-                ToSet().IsSubsetOf(new HashSet<T>(other, _parent._counts.Comparer));
-            public bool IsSupersetOf(IEnumerable<T> other) =>
-                ToSet().IsSupersetOf(new HashSet<T>(other, _parent._counts.Comparer));
+            public bool IsProperSubsetOf(IEnumerable<T> other) => ToSet().IsProperSubsetOf(other);
+            public bool IsProperSupersetOf(IEnumerable<T> other)
+            {
+                return ToSet().IsProperSupersetOf(other);
+            }
+            public bool IsSubsetOf(IEnumerable<T> other) => ToSet().IsSubsetOf(other);
+            public bool IsSupersetOf(IEnumerable<T> other) => ToSet().IsSupersetOf(other);
             public bool Overlaps(IEnumerable<T> other) => ToSet().Overlaps(other);
             public bool SetEquals(IEnumerable<T> other) => ToSet().SetEquals(other);
 

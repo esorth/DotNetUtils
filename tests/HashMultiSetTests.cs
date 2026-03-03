@@ -370,12 +370,13 @@ namespace DotNetUtils.Tests
             Assert.IsTrue(set.Contains("a"));
             Assert.IsTrue(set.Contains("b"));
             Assert.IsFalse(set.Contains("c"));
+            Assert.ThrowsExactly<ArgumentNullException>(() => set.Contains((string)null!));
 
             // Contains(T item, int count)
             Assert.IsTrue(set.Contains("a", 2));
             Assert.IsFalse(set.Contains("a", 1));
             Assert.IsTrue(set.Contains("b", 1));
-            Assert.IsTrue(set.Contains("c", 0));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => set.Contains("c", 0));
             Assert.IsFalse(set.Contains("c", 1));
             Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => set.Contains("a", -1));
 
@@ -389,7 +390,7 @@ namespace DotNetUtils.Tests
             Assert.IsFalse(set.Contains(new[] { "a", "b" })); // not a valid duplicate grouping
             Assert.IsFalse(set.Contains(new[] { "c", "c" }));
             Assert.IsFalse(set.Contains(Array.Empty<string>()));
-            Assert.ThrowsExactly<ArgumentNullException>(() => set.Contains((IReadOnlyCollection<string>)null!));
+            Assert.IsFalse(set.Contains((IReadOnlyCollection<string>)null!));
         }
 
         [TestMethod]
