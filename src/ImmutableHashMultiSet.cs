@@ -77,6 +77,8 @@ public sealed class ImmutableHashMultiSet<T> : IImmutableMultiSet<T> where T : n
 
         ImmutableDictionary<T, int>.Builder builder =
             ImmutableDictionary.CreateBuilder<T, int>(comparer);
+        if (comparer == null && builder.KeyComparer == _counts.KeyComparer) return this;
+
         foreach (KeyValuePair<T, int> pair in _counts)
         {
             if (builder.TryGetValue(pair.Key, out int existing))
@@ -262,7 +264,8 @@ public sealed class ImmutableHashMultiSet<T> : IImmutableMultiSet<T> where T : n
             }
             else
             {
-                return new ImmutableHashMultiSet<T>(_counts.SetItem(item, count), _totalCount + (count - existing));
+                return new ImmutableHashMultiSet<T>(
+                    _counts.SetItem(item, count), _totalCount + (count - existing));
             }
         }
         else
@@ -325,7 +328,7 @@ public sealed class ImmutableHashMultiSet<T> : IImmutableMultiSet<T> where T : n
     {
         if (items == null || items.Count == 0) return false;
 
-        return ValidateDuplicateGrouping(items) &&
+        return ValidateDuplicateGrouping(items, _counts.KeyComparer) &&
             _counts.TryGetValue(items.First(), out int count) &&
             count == items.Count;
     }
@@ -417,19 +420,12 @@ public sealed class ImmutableHashMultiSet<T> : IImmutableMultiSet<T> where T : n
         return ours.Overlaps(theirs);
     }
 
-    private bool ValidateDuplicateGrouping(IReadOnlyCollection<T>? items)
-    {
-        if (items == null || items.Count == 0) return false;
-        T first = items.First();
-        return items.All(item => _counts.KeyComparer.Equals(item, first));
-    }
-
     private HashSet<KeyValuePair<T, int>> ToPairSet(IEnumerable<IReadOnlyCollection<T>> source)
     {
         HashSet<KeyValuePair<T, int>> set = new(new KeyValuePairComparer(_counts.KeyComparer));
         foreach (IReadOnlyCollection<T> collection in source)
         {
-            if (ValidateDuplicateGrouping(collection))
+            if (ValidateDuplicateGrouping(collection, _counts.KeyComparer))
             {
                 set.Add(new KeyValuePair<T, int>(collection.First(), collection.Count));
             }
@@ -444,6 +440,14 @@ public sealed class ImmutableHashMultiSet<T> : IImmutableMultiSet<T> where T : n
             }
         }
         return set;
+    }
+
+    private static bool ValidateDuplicateGrouping(
+        IReadOnlyCollection<T>? items, IEqualityComparer<T> comparer)
+    {
+        if (items == null || items.Count == 0) return false;
+        T first = items.First();
+        return items.All(item => comparer.Equals(item, first));
     }
 
     public Builder ToBuilder() => new(this);
@@ -623,10 +627,9 @@ public sealed class ImmutableHashMultiSet<T> : IImmutableMultiSet<T> where T : n
         public bool Contains(IReadOnlyCollection<T>? items)
         {
             if (items == null || items.Count == 0) return false;
-            T first = items.First();
 
-            return items.All(item => _counts.KeyComparer.Equals(item, first)) &&
-                _counts.TryGetValue(first, out int count) &&
+            return ValidateDuplicateGrouping(items, _counts.KeyComparer) &&
+                _counts.TryGetValue(items.First(), out int count) &&
                 count == items.Count;
         }
 
