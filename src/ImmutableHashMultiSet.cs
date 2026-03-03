@@ -74,7 +74,22 @@ public sealed class ImmutableHashMultiSet<T> : IImmutableMultiSet<T> where T : n
     public ImmutableHashMultiSet<T> WithComparer(IEqualityComparer<T>? comparer)
     {
         if (_counts.KeyComparer == comparer) return this;
-        return new ImmutableHashMultiSet<T>(_counts.WithComparers(comparer), _totalCount);
+
+        ImmutableDictionary<T, int>.Builder builder =
+            ImmutableDictionary.CreateBuilder<T, int>(comparer);
+        foreach (KeyValuePair<T, int> pair in _counts)
+        {
+            if (builder.TryGetValue(pair.Key, out int existing))
+            {
+                builder[pair.Key] = existing + pair.Value;
+            }
+            else
+            {
+                builder.Add(pair.Key, pair.Value);
+            }
+        }
+
+        return new ImmutableHashMultiSet<T>(builder.ToImmutable(), _totalCount);
     }
 
     public ImmutableHashMultiSet<T> Add(T item) => AddN(item, 1);
@@ -336,7 +351,10 @@ public sealed class ImmutableHashMultiSet<T> : IImmutableMultiSet<T> where T : n
     }
     IEnumerator<IReadOnlyCollection<T>> IEnumerable<IReadOnlyCollection<T>>.GetEnumerator()
     {
-        return ItemCollections.GetEnumerator();
+        foreach (KeyValuePair<T, int> pair in _counts)
+        {
+            yield return Enumerable.Repeat(pair.Key, pair.Value).ToArray();
+        }
     }
 
     // IReadOnlySet<IReadOnlyCollection<T>>.SetEquals(IEnumerable<T1>)
@@ -399,9 +417,9 @@ public sealed class ImmutableHashMultiSet<T> : IImmutableMultiSet<T> where T : n
         return ours.Overlaps(theirs);
     }
 
-    private bool ValidateDuplicateGrouping(IReadOnlyCollection<T> items)
+    private bool ValidateDuplicateGrouping(IReadOnlyCollection<T>? items)
     {
-        if (items.Count == 0) return false;
+        if (items == null || items.Count == 0) return false;
         T first = items.First();
         return items.All(item => _counts.KeyComparer.Equals(item, first));
     }
@@ -641,6 +659,14 @@ public sealed class ImmutableHashMultiSet<T> : IImmutableMultiSet<T> where T : n
                 yield return Enumerable.Repeat(pair.Key, pair.Value).ToArray();
             }
         }
+
+        // For simplicity, slightly non-optimally implement the Set comparison operations by
+        // building the Immutable. Implementing "for real" like in HashMultiSet<> or
+        // ImmutableHashMultiSet<> requires work to build a HashSet<KeyValuePair<T, int>> and this
+        // is not too much more work compared to that. Good enough considering it would be weird for
+        // somebody to rely too much on these operations from a builder anyway. They're really just
+        // pulled in by technicality from this implementing the same full interface as mutable
+        // multi-sets.
 
         // IReadOnlySet<IReadOnlyCollection<T>>.SetEquals(IEnumerable<T1>)
         public bool SetEquals(IEnumerable<IReadOnlyCollection<T>> other)
